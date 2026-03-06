@@ -1,0 +1,36 @@
+{
+  "name": "openclaw",
+  "version": "1.0.0",
+  "description": "Personal AI assistant with coding power - accessible via Telegram and WhatsApp",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "dev:watch": "ts-node-dev --respawn src/index.ts",
+    "get-google-token": "ts-node src/scripts/get-google-token.ts"
+  },
+  "dependencies": {
+    "@notionhq/client": "^2.2.15",
+    "@octokit/rest": "^21.0.2",
+    "@anthropic-ai/sdk": "^0.78.0",
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "googleapis": "^144.0.0",
+    "openai": "^4.77.0",
+    "redis": "^4.7.0",
+    "telegraf": "^4.16.3",
+    "twilio": "^5.3.7"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.0",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
