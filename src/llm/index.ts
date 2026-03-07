@@ -209,15 +209,28 @@ async function runOpenRouterLoop(messages: ChatMessage[], model?: string): Promi
 // ── Public API ───────────────────────────────────────────────────────────────
 
 export async function chat(messages: ChatMessage[]): Promise<string> {
-  const codeTask = isCodeTask(messages);
-  
-  // Use Anthropic for code tasks if available, otherwise fall back to OpenRouter
-  if (codeTask && config.llm.anthropicApiKey) {
-    console.log(`[llm] Code task detected → using Anthropic (${config.llm.codeModel})`);
-    return runAnthropicLoop(messages);
-  } else {
-    const model = codeTask ? config.llm.codeModel : config.llm.lightModel;
-    console.log(`[llm] ${codeTask ? 'Code task' : 'Everyday task'} → using OpenRouter (${model})`);
-    return runOpenRouterLoop(messages, codeTask ? `anthropic/${config.llm.codeModel}` : undefined);
+  // If the last user message is a confirmation, use code model
+  const lastMsg = messages[messages.length - 1];
+  const prevMsg = messages[messages.length - 2];
+  const codeConfirm = lastMsg && lastMsg.role === 'user' &&
+    /yes|sure|go ahead|please do|ok|move to code mode|use code mode/i.test(lastMsg.content);
+  const codeSuggest = prevMsg && prevMsg.role === 'assistant' && prevMsg.content.includes('Should I move to code mode');
+
+  if (codeConfirm && codeSuggest) {
+    if (config.llm.anthropicApiKey) {
+      console.log(`[llm] User confirmed code mode → using Anthropic (${config.llm.codeModel})`);
+      return runAnthropicLoop(messages);
+    } else {
+      console.log(`[llm] User confirmed code mode → using OpenRouter (${config.llm.codeModel})`);
+      return runOpenRouterLoop(messages, `anthropic/${config.llm.codeModel}`);
+    }
   }
+
+  // If code keywords detected, ask for confirmation
+  if (isCodeTask(messages)) {
+    return 'This looks like a code-related task. Should I move to code mode for better results?';
+  }
+
+  // Default: always use light model
+  return runOpenRouterLoop(messages, config.llm.lightModel);
 }
