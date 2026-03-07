@@ -1,5 +1,5 @@
 import { Octokit } from '@octokit/rest';
-import { config } from '../config';
+import { config } from '../config/index.js';
 
 function getOctokit() {
   if (!config.github.token) {

@@ -1,13 +1,13 @@
 import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
-import { config } from '../config';
-import { toAnthropicTools, toOpenAITools } from './tools';
-import { readEmails, sendEmail } from '../tools/email';
-import { readCalendar, createCalendarEvent } from '../tools/calendar';
-import { readNotes, createNote } from '../tools/notes';
-import { listRepos, createRepo, writeFile, readFile, createIssue } from '../tools/github';
-import { executeCode } from '../tools/code';
-import type { ChatMessage } from '../session';
+import { config } from '../config/index.js';
+import { toAnthropicTools, toOpenAITools } from './tools.js';
+import { readEmails, sendEmail } from '../tools/email.js';
+import { readCalendar, createCalendarEvent } from '../tools/calendar.js';
+import { readNotes, createNote } from '../tools/notes.js';
+import { listRepos, createRepo, writeFile, readFile, createIssue } from '../tools/github.js';
+import { executeCode } from '../tools/code.js';
+import type { ChatMessage } from '../session/index.js';
 
 const SYSTEM_PROMPT = `You are Openclaw, a powerful personal AI assistant and software engineer. You have access to tools that let you:
 - 📧 Read and send emails via Gmail

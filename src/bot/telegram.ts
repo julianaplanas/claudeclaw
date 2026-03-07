@@ -1,7 +1,7 @@
 import { Telegraf } from 'telegraf';
-import { config } from '../config';
-import { chat } from '../llm';
-import { sessionManager } from '../session';
+import { config } from '../config/index.js';
+import { chat } from '../llm/index.js';
+import { sessionManager } from '../session/index.js';
 
 const MAX_MESSAGE_LENGTH = 4096;
 

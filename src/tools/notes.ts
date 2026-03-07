@@ -1,5 +1,5 @@
 import { Client } from '@notionhq/client';
-import { config } from '../config';
+import { config } from '../config/index.js';
 
 function getNotionClient() {
   if (!config.notion.token) {

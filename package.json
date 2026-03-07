@@ -2,6 +2,7 @@
   "name": "openclaw",
   "version": "1.0.0",
   "description": "Personal AI assistant with coding power - accessible via Telegram and WhatsApp",
+  "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

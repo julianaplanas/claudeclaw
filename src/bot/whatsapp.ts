@@ -1,8 +1,8 @@
 import { Router, Request, Response } from 'express';
 import twilio from 'twilio';
-import { config } from '../config';
-import { chat } from '../llm';
-import { sessionManager } from '../session';
+import { config } from '../config/index.js';
+import { chat } from '../llm/index.js';
+import { sessionManager } from '../session/index.js';
 
 const MAX_WA_LENGTH = 1500; // WhatsApp message limit
 

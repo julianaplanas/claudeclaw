@@ -1,5 +1,5 @@
 import { google } from 'googleapis';
-import { config } from '../config';
+import { config } from '../config/index.js';
 
 function getGmailClient() {
   if (!config.google.clientId || !config.google.refreshToken) {

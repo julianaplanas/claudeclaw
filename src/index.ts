@@ -1,8 +1,8 @@
 import express from 'express';
-import { config, validateConfig } from './config';
-import { sessionManager } from './session';
-import { createTelegramBot } from './bot/telegram';
-import { createWhatsAppRouter } from './bot/whatsapp';
+import { config, validateConfig } from './config/index.js';
+import { sessionManager } from './session/index.js';
+import { createTelegramBot } from './bot/telegram.js';
+import { createWhatsAppRouter } from './bot/whatsapp.js';
 
 async function main() {
   // Validate environment configuration
