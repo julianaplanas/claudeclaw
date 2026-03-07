@@ -20,8 +20,8 @@ async function main() {
   app.get('/health', (_req, res) => {
     res.json({
       status: 'ok',
-      provider: config.llm.provider,
-      model: config.llm.model,
+      everyday: `OpenRouter (${config.llm.lightModel})`,
+      code: config.llm.anthropicApiKey ? `Anthropic (${config.llm.codeModel})` : `OpenRouter (${config.llm.codeModel})`,
       telegram: !!config.telegram.token,
       whatsapp: !!config.whatsapp.accountSid,
       uptime: process.uptime(),

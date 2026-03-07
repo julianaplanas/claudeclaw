@@ -25,6 +25,27 @@ Guidelines:
 - For code blocks, use simple text or backticks — avoid complex formatting.
 - Today's date: ${new Date().toISOString().split('T')[0]}`;
 
+// ── Code task detection ──────────────────────────────────────────────────────
+
+const CODE_KEYWORDS = [
+  'write code', 'write a script', 'create a script', 'write a program',
+  'code', 'script', 'function', 'class', 'algorithm',
+  'python', 'javascript', 'typescript', 'java', 'rust', 'go',
+  'github', 'repo', 'repository', 'commit', 'push', 'pull request',
+  'execute', 'run code', 'debug', 'fix bug', 'refactor',
+  'api', 'endpoint', 'backend', 'frontend', 'database',
+  'deploy', 'dockerfile', 'kubernetes', 'ci/cd',
+  'fibonacci', 'sort', 'parse', 'regex', 'json',
+];
+
+function isCodeTask(messages: ChatMessage[]): boolean {
+  const lastMessage = messages[messages.length - 1];
+  if (!lastMessage || lastMessage.role !== 'user') return false;
+  
+  const content = lastMessage.content.toLowerCase();
+  return CODE_KEYWORDS.some(keyword => content.includes(keyword));
+}
+
 // ── Tool execution dispatcher ────────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -67,7 +88,7 @@ async function executeTool(name: string, args: AnyArgs): Promise<string> {
   }
 }
 
-// ── Anthropic agentic loop ───────────────────────────────────────────────────
+// ── Anthropic agentic loop (for code tasks) ──────────────────────────────────
 
 async function runAnthropicLoop(messages: ChatMessage[]): Promise<string> {
   const client = new Anthropic({ apiKey: config.llm.anthropicApiKey });
@@ -85,7 +106,7 @@ async function runAnthropicLoop(messages: ChatMessage[]): Promise<string> {
     iterations++;
 
     const response = await client.messages.create({
-      model: config.llm.model,
+      model: config.llm.codeModel,
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
       messages: anthropicMessages,
@@ -121,9 +142,9 @@ async function runAnthropicLoop(messages: ChatMessage[]): Promise<string> {
   return 'I reached the maximum number of steps. Please try a more specific request.';
 }
 
-// ── OpenRouter / OpenAI agentic loop ─────────────────────────────────────────
+// ── OpenRouter agentic loop (for everyday tasks) ────────────────────────────
 
-async function runOpenRouterLoop(messages: ChatMessage[]): Promise<string> {
+async function runOpenRouterLoop(messages: ChatMessage[], model?: string): Promise<string> {
   const client = new OpenAI({
     baseURL: 'https://openrouter.ai/api/v1',
     apiKey: config.llm.openrouterApiKey,
@@ -134,6 +155,7 @@ async function runOpenRouterLoop(messages: ChatMessage[]): Promise<string> {
   });
 
   const tools = toOpenAITools();
+  const useModel = model || config.llm.lightModel;
 
   const openAIMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
     { role: 'system', content: SYSTEM_PROMPT },
@@ -147,7 +169,7 @@ async function runOpenRouterLoop(messages: ChatMessage[]): Promise<string> {
     iterations++;
 
     const response = await client.chat.completions.create({
-      model: config.llm.model.includes('/') ? config.llm.model : `anthropic/${config.llm.model}`,
+      model: useModel,
       messages: openAIMessages,
       tools,
       max_tokens: 4096,
@@ -187,9 +209,15 @@ async function runOpenRouterLoop(messages: ChatMessage[]): Promise<string> {
 // ── Public API ───────────────────────────────────────────────────────────────
 
 export async function chat(messages: ChatMessage[]): Promise<string> {
-  if (config.llm.provider === 'anthropic') {
+  const codeTask = isCodeTask(messages);
+  
+  // Use Anthropic for code tasks if available, otherwise fall back to OpenRouter
+  if (codeTask && config.llm.anthropicApiKey) {
+    console.log(`[llm] Code task detected → using Anthropic (${config.llm.codeModel})`);
     return runAnthropicLoop(messages);
   } else {
-    return runOpenRouterLoop(messages);
+    const model = codeTask ? config.llm.codeModel : config.llm.lightModel;
+    console.log(`[llm] ${codeTask ? 'Code task' : 'Everyday task'} → using OpenRouter (${model})`);
+    return runOpenRouterLoop(messages, codeTask ? `anthropic/${config.llm.codeModel}` : undefined);
   }
 }

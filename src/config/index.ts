@@ -13,11 +13,12 @@ function optional(key: string, fallback = ''): string {
 
 export const config = {
   llm: {
-    // Anthropic takes priority; falls back to OpenRouter
-    provider: process.env.ANTHROPIC_API_KEY ? 'anthropic' : 'openrouter',
-    anthropicApiKey: optional('ANTHROPIC_API_KEY'),
+    // OpenRouter + light model for everyday use
     openrouterApiKey: optional('OPENROUTER_API_KEY'),
-    model: optional('LLM_MODEL', 'claude-opus-4-6'),
+    lightModel: optional('LIGHT_MODEL', 'google/gemini-2.5-flash-lite'),
+    // Anthropic + code model for code tasks
+    anthropicApiKey: optional('ANTHROPIC_API_KEY'),
+    codeModel: optional('CODE_MODEL', 'claude-sonnet-4-6'),
   },
 
   telegram: {
@@ -70,8 +71,11 @@ export const config = {
 export function validateConfig() {
   const errors: string[] = [];
 
-  if (!config.llm.anthropicApiKey && !config.llm.openrouterApiKey) {
-    errors.push('At least one of ANTHROPIC_API_KEY or OPENROUTER_API_KEY is required');
+  if (!config.llm.openrouterApiKey) {
+    errors.push('OPENROUTER_API_KEY is required for everyday tasks');
+  }
+  if (!config.llm.anthropicApiKey) {
+    console.warn('[config] ANTHROPIC_API_KEY not set — code tasks will use OpenRouter');
   }
   if (!config.telegram.token && !config.whatsapp.accountSid) {
     errors.push('At least one of TELEGRAM_BOT_TOKEN or TWILIO_ACCOUNT_SID is required');
@@ -82,7 +86,8 @@ export function validateConfig() {
     process.exit(1);
   }
 
-  console.log(`[config] LLM provider: ${config.llm.provider} (model: ${config.llm.model})`);
+  console.log(`[config] Everyday: OpenRouter (${config.llm.lightModel})`);
+  console.log(`[config] Code tasks: ${config.llm.anthropicApiKey ? `Anthropic (${config.llm.codeModel})` : `OpenRouter (${config.llm.lightModel})`}`);
   console.log(`[config] Telegram: ${config.telegram.token ? 'enabled' : 'disabled'}`);
   console.log(`[config] WhatsApp: ${config.whatsapp.accountSid ? 'enabled' : 'disabled'}`);
   console.log(`[config] Gmail: ${config.google.clientId ? 'enabled' : 'disabled'}`);
